@@ -1,0 +1,16 @@
+Hi!
+
+I've set up VPN access for you. Here's how to get connected:
+
+1. Download the attached file (it ends in .conf)
+2. Open the WireGuard app on your device
+3. Tap the "+" button
+4. Choose "Create from file" or "Import from file"
+5. Select the file you just downloaded
+6. Tap "Save" or "Activate"
+
+That's it! Once activated, you can turn the VPN on and off with a simple switch.
+
+If you have any trouble, just reply to this email.
+
+Fred
