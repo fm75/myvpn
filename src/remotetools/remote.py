@@ -95,3 +95,9 @@ def get_public_interfaces(output: str) -> tuple[int, list[str]]:
             candidates.append(interf)
     
     return len(candidates), candidates
+
+    
+def detect_network_interface(c: Connection) -> tuple[int, list[str]]:
+    """Detect public-facing network interface on the server."""
+    result = c.run("ip a", hide=True, in_stream=False)
+    return get_public_interfaces(result.stdout)
