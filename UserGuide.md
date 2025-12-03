@@ -121,7 +121,8 @@ PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACC
 
 Enable IP forwarding permanently:
 ```
-echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf sudo sysctl -p
+echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
 ```
 
 If using UFW, allow WireGuard traffic:
