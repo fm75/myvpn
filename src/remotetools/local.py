@@ -80,7 +80,34 @@ class PeerRecord:
         )
 
 
-def save_peer(peer_record: PeerRecord, csv_path: str = "peers.csv"):
+def remove_peer(name: str, device: str) -> bool:
+    """Remove a peer from storage."""
+    return remove_peer_from_csv(name, device, csv_path="peers.csv")
+
+
+def remove_peer_from_csv(name: str, device: str, csv_path: str = "peers.csv") -> bool:
+    """Delete a peer from the CSV file. Returns True if found and deleted."""
+    if not Path(csv_path).exists():
+        return False
+    
+    peers = load_peers(csv_path)
+    original_count = len(peers)
+    
+    # Filter out the peer to delete
+    remaining_peers = [p for p in peers if not (p.name == name and p.device == device)]
+    
+    if len(remaining_peers) == original_count:
+        return False  # Peer not found
+    
+    # Rewrite the CSV with remaining peers
+    Path(csv_path).unlink()  # Delete old file
+    for peer in remaining_peers:
+        save_peer_to_csv(peer, csv_path)
+    
+    return True
+
+
+def save_peer_to_csv(peer_record: PeerRecord, csv_path: str = "peers.csv"):
     """Append a single peer to the CSV file."""
     file_exists = Path(csv_path).exists()
     
@@ -91,6 +118,16 @@ def save_peer(peer_record: PeerRecord, csv_path: str = "peers.csv"):
         writer.writerow(asdict(peer_record))
 
 
+def add_peer(peer_record: PeerRecord):
+    """Add a peer to storage."""
+    save_peer_to_csv(peer_record)
+
+
+def get_all_peers() -> list[PeerRecord]:
+    """Get all peers from storage."""
+    return load_peers(csv_path="peers.csv")
+
+    
 def load_peers(csv_path: str = "peers.csv") -> list[PeerRecord]:
     """Load all peers from the CSV file."""
     if not Path(csv_path).exists():

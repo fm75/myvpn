@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 def add_peer(c: Connection, name: str, device: str, email: str, csv_path: str = "peers.csv") -> str:
     """Add a new peer to the VPN and return client config."""
     # 1. Load existing peers
-    peers = rtl.load_peers(csv_path)
+    peers = rtl.get_all_peers()
 
     # 2. Find next available IP
     ip = rtl.find_next_vpn_ip(peers)
@@ -25,7 +25,7 @@ def add_peer(c: Connection, name: str, device: str, email: str, csv_path: str = 
 
     # 6. Convert to PeerRecord and save to CSV
     peer_record = rtl.PeerRecord.from_peer_info(peer_info)
-    rtl.save_peer(peer_record, csv_path)
+    rtl.add_peer(peer_record)
 
     # 7. Generate client config text
     client_config = rtl.generate_client_config(peer_info, server_key, f"{c.host}:51820")
@@ -35,6 +35,24 @@ def add_peer(c: Connection, name: str, device: str, email: str, csv_path: str = 
 
     # 9. Return client config
     return client_config
+
+
+def remove_peer(c: Connection, name: str, device: str) -> bool:
+    """Remove a peer from the VPN."""
+    # 1. Delete peer from storage
+    result = rtl.remove_peer(name, device)
+    
+    if not result:
+        return False  # Peer not found
+    
+    # 2. Rebuild and deploy server config
+    
+    print("DEBUG: about to deploy")
+    deploy_config(c)
+    print("DEBUG: about to return True")
+
+    return True
+
 
 def deploy_config(c: Connection, csv_path: str = "peers.csv"):
     """Rebuild and deploy server config from peer database."""
@@ -52,13 +70,8 @@ def deploy_config(c: Connection, csv_path: str = "peers.csv"):
     c.run(f"echo '{config_text}' | sudo tee /etc/wireguard/wg0.conf > /dev/null", hide=True, in_stream=False)
     
     # 5. Reload WireGuard
-    c.sudo("wg syncconf wg0 <(wg-quick strip wg0.conf)", hide=True, in_stream=False)
+    c.sudo("systemctl restart wg-quick@wg0", hide=True, in_stream=False)
 
-def remove_peer(c: Connection, name: str, device: str, csv_path: str = "peers.csv"):
-    """Remove a peer from the VPN."""
-    # 1. Delete peer from CSV (need to add delete_peer to local.py)
-    # 2. Rebuild and deploy server config
-    pass
 
 
 ###############################################################################
